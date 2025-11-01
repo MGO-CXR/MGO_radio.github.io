@@ -4,312 +4,325 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>MGO_radio</title>
+
   <style>
-    :root{
-      --rail: 200px;          /* barre blanche plus fine */
-      --size: 180px;          /* taille finale de la tuile, <= rail */
-      --seed: 22px;           /* seed noire au repos (petite) */
-      --gap: 12px;            /* espace vertical entre tuiles */
-      --border: 8px;          /* contour noir */
-      --dur: 1.4s;            /* ouverture interne */
-      --ease: cubic-bezier(.2,.7,.2,1);
-      --bg: #0b0b12;          /* fond zone contenu */
-      --sub-rail: 80px;
-      --sub-rail-gap: 1cm;
-      --sub-rail-margin: 1cm;
-      --sub-rail-border: 4px;
+    :root {
+      --rail: 200px;
+      --header: 100px;
+      --size: 180px;
+      --seed: 22px;
+      --gap: 12px;
+      --border: 8px;
+      --dur: 1.4s;
+      --ease: cubic-bezier(.2, .7, .2, 1);
+      --bg: #0b0b12;
     }
 
-    *{ box-sizing:border-box; margin:0; }
+    * { box-sizing: border-box; margin: 0; }
 
-    body{
-      min-height:100dvh;
-      background:var(--bg);
-      color:#e9ecff;
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-      padding-right: var(--rail);           /* réserve l'espace de la barre */
+    body {
+      min-height: 100dvh;
+      background: var(--bg);
+      color: #e9ecff;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      padding-right: var(--rail);
+      overflow-x: hidden;
     }
 
-    /* Contenu principal scrollable (à gauche) */
-    main.page{
+    main.page {
       padding: 32px;
       max-width: 960px;
       min-height: 200vh;
-      padding-top: 100px;                   /* pour tester le scroll */
+      padding-top: var(--header);
     }
 
-    /* Barre droite fixe, fine */
-    .rail{
+    :root{
+  --gutter: 20px;  /* marge autour de la fenêtre */
+}
+
+
+
+
+    /* === HEADER === */
+    .site-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: calc(100% - var(--rail));
+      height: var(--header);
+      background: #fff; /* gris clair subtil pour logo blanc */
+      border-bottom: 1px solid #e6e6e6;
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 60px;
+    }
+
+    /* Logo à gauche */
+    .logo {
+      height: 60px;
+      width: auto;
+      display: block;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+    }
+    .logo:hover { opacity: 0.8; }
+
+    /* Menu centré horizontalement */
+    .menu {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 40px;
+      font-size: 1.2em;
+      font-weight: 500;
+    }
+
+    .menu a,
+    .menu a:visited {
+      color: #000;
+      text-decoration: none;
+      text-shadow: none;
+      font-family: Arial, sans-serif;
+      transition: opacity 0.2s ease;
+    }
+
+    .menu a:hover { opacity: 0.5; }
+
+    /* === BARRE DROITE === */
+    .rail {
       position: fixed;
       top: 0;
       right: 0;
       width: var(--rail);
       height: 100dvh;
-      background: #fff;                    /* bande blanche */
+      background: #fff;
       border-left: 1px solid #e6e6e6;
       display: grid;
       grid-template-rows: auto 1fr;
-      padding: 12px 10px 14px;             /* padding réduit */
+      padding: 12px 10px 14px;
       gap: 10px;
     }
 
-    /* Barre fine verticale, fixe et plus courte que la page */
-.sub-rail{
-  position: fixed;
-  top: var(--sub-rail-margin);            /* distance sous le haut */
-  bottom: var(--sub-rail-margin);         /* distance au-dessus du bas */
-  right: calc(var(--rail) + var(--sub-rail-gap)); /* distance de la grande barre */
-  width: var(--sub-rail);
-  background: transparent;
-  border: var(--sub-rail-border) solid #fff;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  padding-bottom: 10px;
-  /* border-left: 1px solid #e6e6e6; */        /* optionnel : trait */
-  /* border-right: 1px solid #e6e6e6; */      /* optionnel : trait */
-  z-index: 9;                             /* sous le header/logo si besoin */
-  /*pointer-events: none;                   /* décoratif : ne bloque pas les clics */
-}
-.pikachu {
-  width: 60%;          /* ajuste la taille à ton goût */
-  height: auto;
-  transform: scaleX(1); /* effet miroir */
-  display: block;
-}
-    /* Colonne verticale de tuiles (scroll interne si besoin) */
-    .vgrid{
+    .vgrid {
       overflow: auto;
       display: grid;
       grid-auto-rows: min-content;
       gap: var(--gap);
-      padding-right: 2px;                  /* anti recouvrement scrollbar */
-      place-items: center;                 /* centre chaque tuile */
+      padding-right: 2px;
+      place-items: center;
     }
 
-    /*  Tuile FIXE, sans fond ni bordure au repos (donc pas de carré final visible) */
-    .tile{
-      width: 100%;                         /* prend la largeur interne de la rail */
-      max-width: var(--size);              /* ne dépasse jamais la taille finale */
-      aspect-ratio: 1 / 1;                 /* carré */
+    /* === TUILES === */
+    .tile {
+      width: 100%;
+      max-width: var(--size);
+      aspect-ratio: 1 / 1;
       position: relative;
       overflow: hidden;
-      background: transparent;             /* ✅ plus de grand carré blanc au repos */
-      border: none;                        /* ✅ pas de contour de tuile */
+      background: transparent;
+      border: none;
       outline: none;
     }
 
-    /* GIF (caché tant qu’on ne survole pas la tuile) */
-    .media{
-      position:absolute;
-      inset:0;
+    .media {
+      position: absolute;
+      inset: 0;
       z-index: 0;
-      clip-path: inset(50% 50% 50% 50%);   /* masqué au repos (centre) */
+      clip-path: inset(50% 50% 50% 50%);
       opacity: 0;
-      transition: clip-path 1.4s var(--ease), 
-      opacity 0.8s ease 0.2s;
+      transition: clip-path var(--dur) var(--ease), opacity 0.8s ease 0.2s;
     }
     .tile:hover .media,
-    .tile:focus-within .media{
+    .tile:focus-within .media {
       clip-path: inset(0 0 0 0);
       opacity: 1;
     }
-    .media > img{
-      width:100%; height:100%;
+
+    .media > img {
+      width: 100%; height: 100%;
       object-fit: cover;
-      display:block;
-      user-select:none; pointer-events:none;
+      display: block;
+      user-select: none; pointer-events: none;
     }
 
-    /* Groupe seed (plein + contour), AU-DESSUS du GIF */
-    .seed{
-      position:absolute;
-      inset:0;
+    .seed {
+      position: absolute;
+      inset: 0;
       z-index: 2;
     }
-
-    /* Seed pleine NOIRE au repos (petite) — disparaît pendant l’ouverture */
-    .seed::before{
-      content:"";
-      position:absolute;
-      left:50%; top:50%;
+    .seed::before {
+      content: "";
+      position: absolute;
+      left: 50%; top: 50%;
       width: var(--seed);
       height: var(--seed);
-      transform: translate(-50%,-50%);
-      background:#000;
-      transition:
-        width var(--dur) var(--ease),
-        height var(--dur) var(--ease),
-        opacity 0.8s ease 0.2s;  /* s'éteint après ~1s */
+      transform: translate(-50%, -50%);
+      background: #000;
+      transition: width var(--dur) var(--ease),
+                  height var(--dur) var(--ease),
+                  opacity 0.8s ease 0.2s;
       opacity: 1;
     }
-
-    /* Contour NOIR qui suit l’expansion et RESTE visible */
-    .seed::after{
-      content:"";
-      position:absolute;
-      left:50%; top:50%;
+    .seed::after {
+      content: "";
+      position: absolute;
+      left: 50%; top: 50%;
       width: var(--seed);
       height: var(--seed);
-      transform: translate(-50%,-50%);
+      transform: translate(-50%, -50%);
       border: var(--border) solid #000;
       background: transparent;
-      transition:
-        width var(--dur) var(--ease),
-        height var(--dur) var(--ease);
+      transition: width var(--dur) var(--ease),
+                  height var(--dur) var(--ease);
       pointer-events: none;
-      z-index: 3;                           /* au-dessus de tout */
+      z-index: 3;
     }
 
-    /*  Cibles : l’animation interne grandit, mais
-          la tuile ne change JAMAIS de taille -> rien ne déborde du rail */
     .tile:hover .seed::before,
     .tile:focus-within .seed::before,
     .tile:hover .seed::after,
-    .tile:focus-within .seed::after{
+    .tile:focus-within .seed::after {
       width: 100%;
       height: 100%;
     }
-
     .tile:hover .seed::before,
-    .tile:focus-within .seed::before{
-      opacity: 0;                           /* on garde seulement le contour */
+    .tile:focus-within .seed::before { opacity: 0; }
+
+    /* === LIENS GLOBAUX === */
+    a, a:visited {
+      color: #fff;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-thickness: 2px;
+    }
+    a:hover, a:focus-visible { color: #f5f5f5; }
+    a { text-shadow: 0 1px 2px rgba(0,0,0,.35); }
+
+    /* === LIEN MIXCLOUD === */
+    .fixed-link {
+      position: fixed;
+      bottom: 10px;
+      left: 20px;
+      color: white;
+      text-decoration: underline;
+      font-size: 0.9em;
+      text-shadow: none;
+      z-index: 1000;
+    }
+    .fixed-link:hover { color: #ccc; }
+
+    /* === GIF EN BAS DE PAGE === */
+    .corner-gif {
+      position: relative;
+      bottom: 0;
+      right: 0;
+      margin-top: 100px;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .corner-gif img {
+      width: 200px;
+      height: auto;
+      transform: scaleX(-1);
+      display: block;
     }
 
-    @media (max-width: 520px){
-      :root{
-        --rail: 160px;                      /* rail encore plus fine sur petit écran */
-        --size: 150px;                      /* tuile ajustée pour ne pas déborder */
-      }
-    }
-    /* Liens globaux en blanc, y compris visités */
-a,
-a:visited {
-  color: #fff;
-  text-decoration: underline;              /* pour mieux ressortir */
-  text-underline-offset: 3px;              /* espace sous le texte */
-  text-decoration-thickness: 2px;          /* soulignement plus visible */
+    /* Bloc noir derrière le logo */
+.logo-wrapper {
+  background: #000;
+  padding: 10px;             /* marge interne autour du logo */
+  border-radius: 4px;        /* léger arrondi optionnel */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 150px;              /* taille du carré */
+  height: 50px;             /* taille du carré */
 }
 
-/* Effet au survol / focus (un peu plus clair) */
-a:hover,
-a:focus-visible {
-  color: #f5f5f5;
-}
-
-/* BONUS lisibilité sur fond chargé : léger halo */
-a {
-  text-shadow: 0 1px 2px rgba(0,0,0,.35);
-}
-.fixed-link {
-  position: fixed;
-  bottom: 10px;           /* distance du bas */
-  left: 20px;            /* distance du bord droit */
-  color: white;           /* couleur du texte */
-  text-decoration: underline; /* lien souligné */
-  font-size: 0.9em;       /* plus petit */
-  text-shadow: none;      /* pas d’ombre, plus net */
-  z-index: 1000;          /* reste visible par-dessus le reste */
-}
-.fixed-link:hover {
-  color: #ccc;            /* couleur au survol */
-}
-h1 {
-  margin-bottom: 20px;  /* espace sous le h1 */
-}
-
-h6 {
-  margin-top: 0;        /* optionnel : évite un double espace inutile */
-}
-.site-header {
-  position: fixed;       /* reste visible en haut */
-  top: 20px;             /* distance du haut de la page */
-  left: 20px;           /* distance du bord droit */
-  z-index: 2000;         /* toujours au-dessus du contenu */
-}
-
-.site-header img {
-  height: 100px;          /* taille du logo */
-  width: auto;           /* garde les proportions */
-  display: block;
-}
-
-.site-header img:hover {
-  opacity: 0.9;          /* petit effet au survol, optionnel */
-  cursor: pointer;
-}
-.corner-gif {
-  position: fixed;
-  bottom: 20px;
-  right: calc(var(--rail) + var(--sub-rail-gap) + var(--sub-rail) + 20px);
-  z-index: 50;
-}
-
-.corner-gif img {
-  width: 200px;
-  height: auto;
-  transform: scaleX(-1); /* 🔁 effet miroir horizontal */
-  display: block;
-}
   </style>
 </head>
+
 <body>
 
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-wrapper" role="button" aria-label="Accueil MGO_radio">
+      <!-- Tu peux supprimer .pilot si tu n'en veux plus -->
+      <!-- <span class="pilot" aria-hidden="true"></span> -->
+      <a href="index.html" class="logo-link">
+        <img src="assets/MGO_radio_logo.svg" alt="MGO_radio logo" class="logo">
+      </a>
+    </div>
+
+    <div class="window-fixed">
+    <!-- contenu futur -->
+    </div>
+
+    <nav class="menu">
+      <a href="about.html">About</a>
+      <!-- futurs liens -->
+      <!-- <a href="projects.html">Projects</a> -->
+      <!-- <a href="contact.html">Contact</a> -->
+    </nav>
+  </header>
+
+  <!-- Contenu principal : UN SEUL <main> -->
   <main class="page">
-    <header class="site-header">
-      <img src="MGO_radio_logo.svg" alt="MGO_radio logo">
-      <h6>this is a multimedia space</h6>
-    </header>
-    <div class="logo-center">
-</div>
+    <!-- Fenêtre en relief (dans le premier main, juste sous le header) -->
+    <section class="window">
+      <div class="panel-media"></div>
+      <!-- Ton contenu viendra ici (titres, texte, images, etc.) -->
+    </section>
+
+    <!-- Lien Mixcloud fixe (peut rester ici, il est en position: fixed) -->
     <p><a href="https://www.mixcloud.com/M_GO/" target="_blank" class="fixed-link">mixcloud</a></p>
+
+    <!-- GIF bas de page (fait partie du flux, donc visible en scroll) -->
+    <div class="corner-gif">
+      <img src="assets/PaParisBoutique2652construction.gif" alt="Corner GIF">
+    </div>
   </main>
 
-<div class="sub-rail">
-  <img src="ParisCafe9362pikaconstruct.gif" alt="Pikachu" class="pikachu">
-</div>
+  <!-- Barre verticale droite (fixe) -->
   <aside class="rail">
     <div class="vgrid">
       <div class="tile" tabindex="0">
         <a href="https://www.mixcloud.com/M_GO/1110driving-in-berlin-20251011-151806/" target="_blank" class="tile-link">
-        <div class="media">
-          <img src="https://d2w9rnfcy7mm78.cloudfront.net/924380/original_afa246531ddeb8a08c72cca9e947e6b6.gif?1489514614?bc=1" alt="GIF 1" />
-        </div>
-        <div class="seed"></div>
-      </a>
+          <div class="media">
+            <img src="https://d2w9rnfcy7mm78.cloudfront.net/924380/original_afa246531ddeb8a08c72cca9e947e6b6.gif" alt="GIF 1" />
+          </div>
+          <div class="seed"></div>
+        </a>
       </div>
-
       <div class="tile" tabindex="0">
         <a href="https://www.mixcloud.com/M_GO/4_mix/" target="_blank" class="tile-link">
-        <div class="media">
-          <img src="https://d2w9rnfcy7mm78.cloudfront.net/671775/original_fe908fae61da164843658f7a162acdce.gif?1470421413?bc=1" alt="GIF 2" />
-        </div>
-        <div class="seed"></div>
-      </a>
+          <div class="media">
+            <img src="https://d2w9rnfcy7mm78.cloudfront.net/671775/original_fe908fae61da164843658f7a162acdce.gif" alt="GIF 2" />
+          </div>
+          <div class="seed"></div>
+        </a>
       </div>
-
       <div class="tile" tabindex="0">
         <a href="https://www.mixcloud.com/M_GO/in-response-to-rhythm-we-dance/" target="_blank" class="tile-link">
-        <div class="media">
-          <img src="https://d2w9rnfcy7mm78.cloudfront.net/908649/original_d1bdf297330de22d56126a7ef4c00f1e.gif?1488515143?bc=1" alt="GIF 3" />
-        </div>
-        <div class="seed"></div>
-      </a>
+          <div class="media">
+            <img src="https://d2w9rnfcy7mm78.cloudfront.net/908649/original_d1bdf297330de22d56126a7ef4c00f1e.gif" alt="GIF 3" />
+          </div>
+          <div class="seed"></div>
+        </a>
       </div>
-
       <div class="tile" tabindex="0">
         <a href="https://www.mixcloud.com/M_GO/3_mix/" target="_blank" class="tile-link">
-        <div class="media">
-          <img src="https://d2w9rnfcy7mm78.cloudfront.net/268537/original_58d1cac00d1fb3ec4ada44451ff7bfe6.gif?1408623804?bc=1" alt="GIF 4" />
-        </div>
-        <div class="seed"></div>
+          <div class="media">
+            <img src="https://d2w9rnfcy7mm78.cloudfront.net/268537/original_58d1cac00d1fb3ec4ada44451ff7bfe6.gif" alt="GIF 4" />
+          </div>
+          <div class="seed"></div>
+        </a>
       </div>
-    </a>
     </div>
   </aside>
-  <div class="corner-gif">
-  <img src="PaParisBoutique2652construction.gif" alt="Corner GIF">
-</div>
 
 </body>
 </html>

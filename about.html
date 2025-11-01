@@ -3,12 +3,157 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>About — MGO Radio</title>
-  <link rel="stylesheet" href="assets/styles.css">
+  <title>About — MGO_radio</title>
+
+  <style>
+    :root {
+      --rail: 200px;
+      --header: 100px;
+      --bg: #0b0b12;
+    }
+
+    * { box-sizing: border-box; margin: 0; }
+
+    body {
+      min-height: 100dvh;
+      background: var(--bg);
+      color: #e9ecff;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      padding-right: var(--rail);
+      overflow-x: hidden;
+    }
+
+    main.page {
+      padding: 32px;
+      max-width: 960px;
+      min-height: 100vh;
+      padding-top: var(--header);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* === HEADER === */
+    .site-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: calc(100% - var(--rail));
+      height: var(--header);
+      background: #fff;
+      border-bottom: 1px solid #e6e6e6;
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 60px;
+    }
+
+    /* Bloc noir derrière le logo */
+    .logo-wrapper {
+      background: #000;
+      padding: 10px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 150px;
+      height: 50px; /* ← hauteur indépendante du header */
+    }
+
+    .logo {
+      height: 60px;
+      width: auto;
+      display: block;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+    }
+    .logo:hover { opacity: 0.8; }
+
+    /* Menu centré horizontalement */
+    .menu {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 40px;
+      font-size: 1.2em;
+      font-weight: 500;
+    }
+
+    .menu a,
+    .menu a:visited {
+      color: #000;
+      text-decoration: none;
+      text-shadow: none;
+      font-family: Arial, sans-serif;
+      transition: opacity 0.2s ease;
+    }
+
+    .menu a:hover { opacity: 0.5; }
+
+    /* === BARRE DROITE === */
+    .rail {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: var(--rail);
+      height: 100dvh;
+      background: #fff;
+      border-left: 1px solid #e6e6e6;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      padding: 12px 10px 14px;
+    }
+
+    /* === CONTENU ABOUT === */
+    .about-content {
+      text-align: center;
+      max-width: 600px;
+      line-height: 1.6;
+      font-size: 1.1em;
+      color: #e9ecff;
+    }
+
+  </style>
 </head>
+
 <body>
-  <h1>À propos</h1>
-  <p>Bienvenue sur la section à propos de MGO_radio.</p>
-  <a href="index.html">← Retour à l’accueil</a>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-wrapper">
+      <a href="index.html" class="logo-link">
+        <img src="assets/MGO_radio_logo.svg" alt="MGO_radio logo" class="logo">
+      </a>
+    </div>
+
+    <nav class="menu">
+      <a href="about.html">About</a>
+    </nav>
+  </header>
+
+  <!-- Contenu principal -->
+  <main class="page">
+  <div class="about-content">
+    <img
+      src="https://d2w9rnfcy7mm78.cloudfront.net/12524490/original_7eb560b8a2ee74cdc998d8000b3e2b4d.png?1626150402?bc=0"
+      alt="MGO_radio visual"
+      class="about-image"
+    >
+
+    <h1>About MGO_radio</h1>
+    <p>
+      MGO_radio is an experimental digital space exploring sound, rhythm, and atmosphere.<br>
+      Each broadcast reflects a different landscape — musical, visual, or conceptual.<br>
+      This page will soon host archives, live sets, and interactive projects.
+    </p>
+  </div>
+</main>
+
+  <!-- Barre verticale droite (vide mais présente) -->
+  <aside class="rail"></aside>
+
 </body>
 </html>
